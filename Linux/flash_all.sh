@@ -5,6 +5,7 @@ echo "#                Pong Fastboot ROM Flasher                #"
 echo "#                   Developed/Tested By                   #"
 echo "#  HELLBOY017, viralbanda, spike0en, PHATwalrus, arter97  #"
 echo "#          [Nothing Phone (2) Telegram Dev Team]          #"
+echo "#              [Adapted to Nothing Phone (1)]             #"
 echo "###########################################################"
 
 fastboot=bin/fastboot
@@ -84,7 +85,7 @@ case $LOGICAL_RESP in
         echo "###############################"
         echo "# FLASHING LOGICAL PARTITIONS #"
         echo "###############################"
-        for i in system system_ext product vendor vendor_dlkm odm; do
+        for i in system system_ext product vendor odm; do
             for s in a b; do
                 $fastboot delete-logical-partition ${i}_${s}-cow
                 $fastboot delete-logical-partition ${i}_${s}

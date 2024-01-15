@@ -1,11 +1,12 @@
 @echo off
-title Nothing Phone 2 Fastboot ROM Flasher (t.me/NothingPhone2)
+title Nothing Phone (1) Fastboot ROM Flasher (t.me/NothingPhone1)
 
 echo ###########################################################
 echo #                Pong Fastboot ROM Flasher                #
 echo #                   Developed/Tested By                   #
 echo #  HELLBOY017, viralbanda, spike0en, PHATwalrus, arter97  #
 echo #          [Nothing Phone (2) Telegram Dev Team]          #
+echo #              [Adapted to Nothing Phone (1)]             #
 echo ###########################################################
 
 cd %~dp0
@@ -95,7 +96,7 @@ if not exist super.img (
     ) else (
         call :ResizeLogicalPartition
     )
-    for %%i in (system system_ext product vendor vendor_dlkm odm) do (
+    for %%i in (system system_ext product vendor odm) do (
         call :FlashImage %%i, %%i.img
     )
 ) else (
@@ -151,7 +152,7 @@ if %errorlevel% neq 0 (
 exit /b
 
 :ResizeLogicalPartition
-for %%i in (system system_ext product vendor vendor_dlkm odm) do (
+for %%i in (system system_ext product vendor odm) do (
     for %%s in (a b) do (
         call :DeleteLogicalPartition %%i_%%s-cow
         call :DeleteLogicalPartition %%i_%%s
