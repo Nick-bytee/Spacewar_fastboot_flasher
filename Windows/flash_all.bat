@@ -10,21 +10,32 @@ echo #              [Adapted to Nothing Phone (1)]             #
 echo ###########################################################
 
 cd %~dp0
-set fastboot=.\platform-tools\fastboot.exe
 
+if not exist platform-tools-latest (
+    curl -L https://dl.google.com/android/repository/platform-tools-latest-windows.zip -o platform-tools-latest.zip
+    Call :UnZipFile "%~dp0platform-tools-latest", "%~dp0platform-tools-latest.zip"
+    del /f /q platform-tools-latest.zip
+)
+
+set fastboot=.\platform-tools-latest\platform-tools\fastboot.exe
 if not exist %fastboot% (
     echo Fastboot cannot be executed. Aborting
     pause
     exit
 )
 
-%fastboot% getvar current-slot 2>&1 | find /c "current-slot: a" > tmpFile
-set /p active_slot= < tmpFile
-del /q tmpFile
+echo #############################
+echo # CHECKING FASTBOOT DEVICES #
+echo #############################
+%fastboot% devices
+
+%fastboot% getvar current-slot 2>&1 | find /c "current-slot: a" > tmpFile.txt
+set /p active_slot= < tmpFile.txt
+del /f /q tmpFile.txt
 if %active_slot% equ 0 (
     echo #############################
     echo # CHANGING ACTIVE SLOT TO A #
-    echo #############################    
+    echo #############################
     call :SetActiveSlot
 )
 
@@ -134,6 +145,29 @@ echo You may now optionally re-lock the bootloader if you haven't disabled andro
 pause
 exit
 
+:UnZipFile
+set vbs="%temp%\_.vbs"
+if exist %vbs% del /f /q %vbs%
+>%vbs%  echo Set fso = CreateObject("Scripting.FileSystemObject")
+>>%vbs% echo If NOT fso.FolderExists("%~1") Then
+>>%vbs% echo fso.CreateFolder("%~1")
+>>%vbs% echo End If
+>>%vbs% echo set objShell = CreateObject("Shell.Application")
+>>%vbs% echo set FilesInZip=objShell.NameSpace("%~2").items
+>>%vbs% echo objShell.NameSpace("%~1").CopyHere(FilesInZip)
+>>%vbs% echo Set fso = Nothing
+>>%vbs% echo Set objShell = Nothing
+cscript //nologo %vbs%
+if exist %vbs% del /f /q %vbs%
+exit /b
+
+:ErasePartition
+%fastboot% erase %~1
+if %errorlevel% neq 0 (
+    call :Choice "Erasing %~1 partition failed"
+)
+exit /b
+
 :SetActiveSlot
 %fastboot% --set-active=a
 if %errorlevel% neq 0 (
@@ -172,13 +206,6 @@ exit /b
 %fastboot% create-logical-partition %~1 %~2
 if %errorlevel% neq 0 (
     call :Choice "Creating %~1 partition failed"
-)
-exit /b
-
-:ErasePartition
-%fastboot% erase %~1
-if %errorlevel% neq 0 (
-    call :Choice "Erasing %~1 partition failed"
 )
 exit /b
 
