@@ -1,128 +1,226 @@
 #!/bin/bash
 
 echo "###########################################################"
-echo "#                Pong Fastboot ROM Flasher                #"
-echo "#                   Developed/Tested By                   #"
+echo "#                Spacewar Fastboot ROM Flasher            #"
+echo "#                        開発/テスト者                         #"
 echo "#  HELLBOY017, viralbanda, spike0en, PHATwalrus, arter97  #"
 echo "#          [Nothing Phone (2) Telegram Dev Team]          #"
-echo "#              [Nothing Phone (1)にも使用可能]              #"
+echo "#               [Nothing Phone (1)にも使用可能]               #"
 echo "###########################################################"
 
-fastboot=bin/fastboot
+##----------------------------------------------------------##
+if [ ! -d platform-tools ]; then
+    wget https://dl.google.com/android/repository/platform-tools-latest-linux.zip -O platform-tools-latest.zip
+    unzip platform-tools-latest.zip
+    rm platform-tools-latest.zip
+fi
+
+fastboot=platform-tools/fastboot
 
 if [ ! -f $fastboot ] || [ ! -x $fastboot ]; then
-    echo "Fastboot cannot be executed, exiting"
+    echo "Fastboot を実行できません。終了します"
     exit 1
 fi
 
+# パーティション変数
+boot_partitions="boot vendor_boot dtbo recovery"
+firmware_partitions="abl aop aop_config bluetooth cpucp devcfg dsp featenabler hyp imagefv keymaster modem multiimgoem multiimgqti qupfw qweslicstore shrm tz uefi uefisecapp xbl xbl_config xbl_ramdump"
+logical_partitions="system system_ext product vendor odm"
+vbmeta_partitions="vbmeta_system vbmeta_vendor"
+
+function SetActiveSlot {
+    $fastboot --set-active=a
+    if [ $? -ne 0 ]; then
+        echo "スロット A への切り替え中にエラーが発生しました。中止します"
+        exit 1
+    fi
+}
+
+function handle_fastboot_error {
+    if [ ! $FASTBOOT_ERROR = "n" ] || [ ! $FASTBOOT_ERROR = "N" ] || [ ! $FASTBOOT_ERROR = "" ]; then
+       exit 1
+    fi  
+}
+
+function ErasePartition {
+    $fastboot erase $1
+    if [ $? -ne 0 ]; then
+        read -p "$1 パーティションの消去に失敗しました。続行しますか？不確かな場合は N と入力してください。[Enter キーを押すと続行します] (Y/N)" FASTBOOT_ERROR
+        handle_fastboot_error
+    fi
+}
+
+function FlashImage {
+    $fastboot flash $1 $2
+    if [ $? -ne 0 ]; then
+        read -p "$2 のフラッシュに失敗しました。続行しますか？不確かな場合は N と入力してください。[Enter キーを押すと続行します] (Y/N)" FASTBOOT_ERROR
+        handle_fastboot_error
+    fi
+}
+
+function DeleteLogicalPartition {
+    $fastboot delete-logical-partition $1
+    if [ $? -ne 0 ]; then
+        read -p "$1 パーティションの削除に失敗しました。続行しますか？不確かな場合は N と入力してください。[Enter キーを押すと続行します] (Y/N)" FASTBOOT_ERROR
+        handle_fastboot_error
+    fi
+}
+
+function CreateLogicalPartition {
+    $fastboot create-logical-partition $1 $2
+    if [ $? -ne 0 ]; then
+        read -p "$1 パーティションの作成に失敗しました。続行しますか？不確かな場合は N と入力してください。[Enter キーを押すと続行します] (Y/N)" FASTBOOT_ERROR
+        handle_fastboot_error
+    fi
+}
+
+function ResizeLogicalPartition {
+    for i in $logical_partitions; do
+        for s in a b; do 
+            DeleteLogicalPartition "${i}_${s}-cow"
+            DeleteLogicalPartition "${i}_${s}"
+            CreateLogicalPartition "${i}_${s}" \ "1"
+        done
+    done
+}
+
+function WipeSuperPartition {
+    $fastboot wipe-super super_empty.img
+    if [ $? -ne 0 ]; then 
+        echo "スーパーパーティションの消去に失敗しました。論理パーティションの削除および作成にフォールバックします"
+        ResizeLogicalPartition
+    fi
+}
+##----------------------------------------------------------##
+
 echo "#############################"
-echo "#       スロットAに変更        #"
+echo "#     FASTBOOT デバイスの確認     #"
 echo "#############################"
-$fastboot --set-active=a
+$fastboot devices
+
+ACTIVE_SLOT=$($fastboot getvar current-slot 2>&1 | awk 'NR==1{print $2}')
+if [ ! $ACTIVE_SLOT = "waiting" ] && [ ! $ACTIVE_SLOT = "a" ]; then
+    echo "#############################"
+    echo "#    アクティブスロットを A に変更      #"
+    echo "#############################"
+    SetActiveSlot
+fi
 
 echo "###################"
-echo "#   データの初期化   #"
+echo "#    データのフォーマット  #"
 echo "###################"
-read -p "データを初期化しますか? (Y/N) " DATA_RESP
+read -p "データを消去しますか？ (Y/N) " DATA_RESP
 case $DATA_RESP in
     [yY] )
-        echo '"Did you mean to format this partition?"という警告のメッセージは無視をしてください'
-        $fastboot erase userdata
-        $fastboot erase metadata
+        echo '「このパーティションをフォーマットするつもりですか？」の警告は無視してください。'
+        ErasePartition userdata
+        ErasePartition metadata
         ;;
 esac
 
-read -p "両方のスロットにFlashされたイメージが存在しますか? 不明の場合は「N」と入力。 (Y/N) " SLOT_RESP
+echo "############################"
+echo "#     ブートパーティションのフラッシュ    #"
+echo "############################"
+read -p "両方のスロットにイメージをフラッシュしますか？不確かな場合は N と入力してください。 (Y/N) " SLOT_RESP
 case $SLOT_RESP in
     [yY] )
         SLOT="--slot=all"
         ;;
+    *)
+        SLOT="--slot=a"
+        ;;
 esac
 
-echo "##########################"
-echo "#  bootとrecoveryをFlash  #"
-echo "##########################"
-for i in boot vendor_boot dtbo recovery; do
-    if [ $SLOT = "--slot=all" ]; then
+if [ $SLOT = "--slot=all" ]; then
+    for i in $boot_partitions; do
         for s in a b; do
-            $fastboot flash ${i}_${s} $i.img
+            FlashImage "${i}_${s}" \ "$i.img"
         done
-    else
-        $fastboot flash $i $i.img
-    fi
-done
+    done
+else
+    for i in $boot_partitions; do
+        FlashImage "$i" \ "$i.img"
+    done
+fi
 
 echo "##########################"             
-echo "#    FASTBOOTDで再起動     #"       
+echo "#    FASTBOOTD への再起動   #"       
 echo "##########################"
 $fastboot reboot fastboot
+if [ $? -ne 0 ]; then
+    echo "fastbootd への再起動中にエラーが発生しました。中止します"
+    exit 1
+fi
 
-echo "######################"
-echo "# ファームウェアをFlash #"
-echo "######################"
-for i in abl aop aop_config bluetooth cpucp devcfg dsp featenabler hyp imagefv keymaster modem multiimgoem multiimgqti qupfw qweslicstore shrm tz uefi uefisecapp xbl xbl_config xbl_ramdump; do
-    $fastboot flash $SLOT $i $i.img
+echo "#####################"
+echo "#   ファームウェアのフラッシュ   #"
+echo "#####################"
+for i in $firmware_partitions; do
+    FlashImage "$SLOT $i" \ "$i.img"
 done
 
 echo "###################"
-echo "#  vbmetaのFlash   #"
+echo "#  VBMETA のフラッシュ  #"
 echo "###################"
-read -p "AVBを無効化しますか? 不明な場合は「N」と入力、「Y」を入力するとブートローダーはロックできなくなります。 (Y/N) " VBMETA_RESP
+read -p "Android の検証ブートを無効にしますか？不確かな場合は N と入力してください。Y を選択するとブートローダーはロックできません。 (Y/N) " VBMETA_RESP
 case $VBMETA_RESP in
     [yY] )
-        $fastboot flash $SLOT vbmeta --disable-verity --disable-verification vbmeta.img
+        FlashImage "$SLOT vbmeta --disable-verity --disable-verification" \ "vbmeta.img"
         ;;
     *)
-        $fastboot flash $SLOT vbmeta vbmeta.img
+        FlashImage "$SLOT vbmeta" \ "vbmeta.img"
         ;;
 esac
 
-echo "logical partitionイメージをFlashしますか?"
-echo "独自のlogical partitionを分散するカスタムROMをインストールしようとしている場合は、「N」を入力してください。"
-read -p "よくわからない場合は「Y」と入力してください。 (Y/N) " LOGICAL_RESP
+echo "###############################"
+echo "#       論理パーティションのフラッシュ      #"
+echo "###############################"
+echo "論理パーティションイメージをフラッシュしますか？"
+echo "カスタム ROM をインストールする場合は N と入力してください。"
+read -p "不確かな場合は Y と入力してください。 (Y/N) " LOGICAL_RESP
 case $LOGICAL_RESP in
     [yY] )
-        echo "###############################"
-        echo "#   logical partitionのFlash   #"
-        echo "###############################"
-        for i in system system_ext product vendor odm; do
-            for s in a b; do
-                $fastboot delete-logical-partition ${i}_${s}-cow
-                $fastboot delete-logical-partition ${i}_${s}
-                $fastboot create-logical-partition ${i}_${s} 1
+        if [ ! -f super.img ]; then
+            if [ -f super_empty.img ]; then
+                WipeSuperPartition
+            else
+                ResizeLogicalPartition
+            fi
+            for i in $logical_partitions; do
+                FlashImage "$i" \ "$i.img"
             done
-
-            $fastboot flash $i $i.img
-        done
+        else
+            FlashImage "super" \ "super.img"
+        fi
         ;;
 esac
 
-echo "#################################"
-echo "#  vbmeta system/vendorをFlash   #"
-echo "#################################"
-for i in vbmeta_system vbmeta_vendor; do
+echo "####################################"
+echo "#      他の VBMETA パーティションのフラッシュ    #"
+echo "####################################"
+for i in $vbmeta_partitions; do
     case $VBMETA_RESP in
         [yY] )
-            $fastboot flash $i --disable-verity --disable-verification $i.img
+            FlashImage "$i --disable-verity --disable-verification" \ "$i.img"
             ;;
         *)
-            $fastboot flash $i $i.img
+            FlashImage "$i" \ "$i.img"
             ;;
     esac
 done
 
 echo "#############"
-echo "#   再起動   #"
+echo "#   再起動    #"
 echo "#############"
-read -p "システムを再起動しますか? よくわからない場合は「Y」と入力してください。 (Y/N) " REBOOT_RESP
+read -p "システムに再起動しますか？不確かな場合は Y と入力してください。 (Y/N) " REBOOT_RESP
 case $REBOOT_RESP in
     [yY] )
         $fastboot reboot
         ;;
 esac
 
-echo "#########"
-echo "#  完了  #"
-echo "#########"
-echo "Stock ROMの復元が完了しました。"
-echo "AVBを無効化していない場合は、オプションでブートローダーの再ロックができるようになりました。"
+echo "########"
+echo "#  完了 #"
+echo "########"
+echo "ストックファームウェアが復元されました。"
+echo "必要に応じてブートローダーを再ロックできます（Android の検証ブートが無効の場合はオプションです）"

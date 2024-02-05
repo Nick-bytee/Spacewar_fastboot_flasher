@@ -3,10 +3,10 @@ title Nothing Phone (1) Fastboot ROM Flasher (t.me/NothingPhone1)
 
 echo ###########################################################
 echo #                Pong Fastboot ROM Flasher                #
-echo #                   Developed/Tested By                   #
-echo #  HELLBOY017, viralbanda, spike0en, PHATwalrus, arter97  #
+echo #                       開発/テスト者                          #
+echo #  HELLBOY017、viralbanda、spike0en、PHATwalrus、arter97      #
 echo #          [Nothing Phone (2) Telegram Dev Team]          #
-echo #              [Nothing Phone (1)にも使用可能]            #
+echo #                [Nothing Phone (1)にも使用可能]              #
 echo ###########################################################
 
 cd %~dp0
@@ -19,13 +19,18 @@ if not exist platform-tools-latest (
 
 set fastboot=.\platform-tools-latest\platform-tools\fastboot.exe
 if not exist %fastboot% (
-    echo Fastboot cannot be executed. Aborting
+    echo Fastbootを実行できません。中止します。
     pause
     exit
 )
 
+set boot_partitions=boot vendor_boot dtbo recovery
+set firmware_partitions=abl aop aop_config bluetooth cpucp devcfg dsp featenabler hyp imagefv keymaster modem multiimgoem multiimgqti qupfw qweslicstore shrm tz uefi uefisecapp xbl xbl_config xbl_ramdump
+set logical_partitions=system system_ext product vendor odm
+set vbmeta_partitions=vbmeta_system vbmeta_vendor
+
 echo #############################
-echo #  FASTBOOTデバイスの確認   #
+echo #    FASTBOOTデバイスの確認       #
 echo #############################
 %fastboot% devices
 
@@ -34,63 +39,65 @@ set /p active_slot= < tmpFile.txt
 del /f /q tmpFile.txt
 if %active_slot% equ 0 (
     echo #############################
-    echo #      スロットAに変更      #
+    echo #      アクティブスロットをAに変更      #
     echo #############################
     call :SetActiveSlot
 )
 
-echo ####################
-echo #  データの初期化  #
-echo ####################
-choice /m "データを初期化しますか?"
+echo ###################
+echo #   データのフォーマット    #
+echo ###################
+choice /m "データを消去しますか？"
 if %errorlevel% equ 1 (
-    echo "Did you mean to format this partition?"という警告のメッセージは無視をしてください
+    echo 「このパーティションをフォーマットしますか？」の警告は無視してください。
     call :ErasePartition userdata
     call :ErasePartition metadata
 )
 
-echo ###########################
-echo #  bootとrecoveryをFlash  #
-echo ###########################
-choice /m "両方のスロットにFlashされたイメージが存在しますか? 不明の場合は「N」と入力。"
+echo ############################
+echo #     ブートパーティションのフラッシュ     #
+echo ############################
+choice /m "両方のスロットにイメージをフラッシュしますか？ よく分からない場合はNと答えてください。"
 if %errorlevel% equ 1 (
     set slot=all
 ) else (
     set slot=a
 )
 
-for %%i in (boot vendor_boot dtbo recovery) do (
-    if %slot% equ all (
+if %slot% equ all (
+    for %%i in (%boot_partitions%) do (
         for %%s in (a b) do (
             call :FlashImage %%i_%%s, %%i.img
         )
-    ) else (
+    ) 
+) else (
+    for %%i in (%boot_partitions%) do (
         call :FlashImage %%i, %%i.img
     )
 )
 
 echo ##########################             
-echo #   FASTBOOTDで再起動    #       
+echo #    FASTBOOTDに再起動      #       
 echo ##########################
 %fastboot% reboot fastboot
 if %errorlevel% neq 0 (
-    echo fastootの再起動中にエラーが発生しました。中止をします。
+    echo fastbootdに再起動中にエラーが発生しました。中止します。
     pause
     exit
 )
 
-echo #########################
-echo # ファームウェアをFlash #
-echo #########################
-for %%i in (abl aop aop_config bluetooth cpucp devcfg dsp featenabler hyp imagefv keymaster modem multiimgoem multiimgqti qupfw qweslicstore shrm tz uefi uefisecapp xbl xbl_config xbl_ramdump) do (
+echo #####################
+echo #   ファームウェアのフラッシュ   #
+echo #####################
+for %%i in (%firmware_partitions%) do (
     call :FlashImage "--slot=%slot% %%i", %%i.img
 )
 
 echo ###################
-echo #  vbmetaのFlash  #
+echo #  VBMETAのフラッシュ   #
 echo ###################
 set disable_avb=0
-choice /m "AVBを無効化しますか? 不明な場合は「N」と入力、「Y」を入力するとブートローダーはロックできなくなります。"
+choice /m "Android Verified Bootを無効にしますか？ よく分からない場合はNと答えてください。Yを選択するとブートローダーがロックできなくなります。"
 if %errorlevel% equ 1 (
     set disable_avb=1
     call :FlashImage "--slot=%slot% vbmeta --disable-verity --disable-verification", vbmeta.img
@@ -98,29 +105,31 @@ if %errorlevel% equ 1 (
     call :FlashImage "--slot=%slot% vbmeta", vbmeta.img
 )
 
-if not exist super.img (
-    echo ###############################
-    echo #  logical partitionをFlash   #
-    echo ###############################
-    if exist super_empty.img (
-        call :WipeSuperPartition
+echo ###############################
+echo #      論理パーティションのフラッシュ       #
+echo ###############################
+echo 論理パーティションイメージをフラッシュしますか？
+echo カスタムROMをインストールする場合はNと答えてください。
+choice /m "よく分からない場合はYと答えてください。"
+if %errorlevel% equ 1 (
+    if not exist super.img (
+        if exist super_empty.img (
+            call :WipeSuperPartition
+        ) else (
+            call :ResizeLogicalPartition
+        )
+        for %%i in (%logical_partitions%) do (
+            call :FlashImage %%i, %%i.img
+        )
     ) else (
-        call :ResizeLogicalPartition
+        call :FlashImage super, super.img
     )
-    for %%i in (system system_ext product vendor odm) do (
-        call :FlashImage %%i, %%i.img
-    )
-) else (
-    echo ##################
-    echo #  SuperをFlash  #
-    echo ##################
-    call :FlashImage super, super.img
 )
 
-echo ##################################
-echo #  vbmeta system/vendorをFlash   #
-echo ##################################
-for %%i in (vbmeta_system vbmeta_vendor) do (
+echo ####################################
+echo #      他のVBMETAパーティションのフラッシュ      #
+echo ####################################
+for %%i in (%vbmeta_partitions%) do (
     if %disable_avb% equ 1 (
         call :FlashImage "%%i --disable-verity --disable-verification", %%i.img
     ) else (
@@ -128,19 +137,19 @@ for %%i in (vbmeta_system vbmeta_vendor) do (
     )
 )
 
-echo ##############
-echo #   再起動   #
-echo ##############
-choice /m "システムを再起動しますか? よくわからない場合は「Y」と入力してください。"
+echo #############
+echo #   再起動    #
+echo #############
+choice /m "システムに再起動しますか？ よく分からない場合はYと答えてください。"
 if %errorlevel% equ 1 (
     %fastboot% reboot
 )
 
-echo ##########
-echo #  完了  #
-echo ##########
-echo Stock ROMの復元が完了しました。
-echo AVBを無効化していない場合は、オプションでブートローダーの再ロックができるようになりました。
+echo ########
+echo #  完了 #
+echo ########
+echo Stock firmware restored.
+echo 必要に応じてブートローダーを再ロックできます（Android Verified Bootが無効になっていない場合）。
 
 pause
 exit
@@ -171,7 +180,7 @@ exit /b
 :SetActiveSlot
 %fastboot% --set-active=a
 if %errorlevel% neq 0 (
-    echo Error occured while switching to slot A. Aborting
+    echo スロットAに切り替える際にエラーが発生しました。中止します。
     pause
     exit
 )
@@ -180,13 +189,13 @@ exit /b
 :WipeSuperPartition
 %fastboot% wipe-super super_empty.img
 if %errorlevel% neq 0 (
-    echo Wiping super partition failed. Fallback to deleting and creating logical partitions
+    echo スーパーパーティションの消去に失敗しました。論理パーティションの削除と作成にフォールバックします。
     call :ResizeLogicalPartition
 )
 exit /b
 
 :ResizeLogicalPartition
-for %%i in (system system_ext product vendor odm) do (
+for %%i in (%logical_partitions%) do (
     for %%s in (a b) do (
         call :DeleteLogicalPartition %%i_%%s-cow
         call :DeleteLogicalPartition %%i_%%s
@@ -217,7 +226,7 @@ if %errorlevel% neq 0 (
 exit /b
 
 :Choice
-choice /m "%~1 continue? If unsure say N"
+choice /m "%~1 続行しますか？ よく分からない場合はNと答えてください。"
 if %errorlevel% equ 2 (
     exit
 )
