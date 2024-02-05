@@ -1,23 +1,23 @@
 # Nothing Phone (1) Fastboot ROM Flasher
 
-### �n�߂�
-- ���̃X�N���v�g�́ASuper�̃p�[�e�B�V�����T�C�Y���ύX����Ă��Ȃ��󋵂ł����[�U�[��Stock ROM�ɖ߂�����A�f�o�C�X���A���u���b�N�����鎖���֗��ɂȂ�X�N���v�g�ł��B(Flash���ꂽROM��Stock ROM�Ɠ���Super�̃p�[�e�B�V�����T�C�Y���g�p���Ă���ꍇ�A���̃X�N���v�g�͏�ɋ@�\���܂�)
-���̃X�N���v�g�́A�J�X�^�����J�o���[��Stock ROM��Flash�Ɏ��s���ASuper�̃p�[�e�B�V���������ăG���[�ɂȂ�ꍇ�ɔ��ɖ𗧂��܂��B���̃X�N���v�g�ŃJ�X�^��ROM��Flash�ɂ��ύX��Stock ROM�ł��g�p���ł��܂��B
+### 始めに
+- このスクリプトは、Superのパーティションサイズが変更されていない状況でもユーザーがStock ROMに戻したり、デバイスをアンブリックさせる事が便利になるスクリプトです。(FlashされたROMがStock ROMと同じSuperのパーティションサイズを使用している場合、このスクリプトは常に機能します)
+このスクリプトは、カスタムリカバリーがStock ROMのFlashに失敗し、Superのパーティションが壊れてエラーになる場合に非常に役立ちます。このスクリプトでカスタムROMのFlashにも変更やStock ROMでも使用ができます。
 
-### �g�p���@
-- ��Ƃ��s�Ȃ��O�ɁA���̃X�N���v�g���g�p����OS�ɑΉ����Ă��邩�m�F���Ă��������B�X�N���v�g��[����](https://github.com/spike0en/Spacewar_Archive)����_�E�����[�h������`*.img`��W�J�����f�B���N�g���ɔz�u���܂��B�Ō�Ƀf�o�C�X���ċN�����A�u�[�g���[�_�[�ŋN�����Ă���
+### 使用方法
+- 作業を行なう前に、このスクリプトが使用中のOSに対応しているか確認してください。スクリプトを[ここ](https://github.com/spike0en/Spacewar_Archive)からダウンロードをした`*.img`を展開したディレクトリに配置します。最後にデバイスを再起動し、ブートローダーで起動してから
 
-    Windows��� `flash_all.bat` �t�@�C�����_�u���N���b�N�ŃX�N���v�g�����s���܂� 
+    Windows上で `flash_all.bat` ファイルをダブルクリックでスクリプトを実行します 
 
-    �܂��́ALinux OS�� `*.img` �t�@�C����W�J�����f�B���N�g���Ń^�[�~�i�����J���A�ȉ��̂悤�ɃX�N���v�g�����s���܂� :
+    または、Linux OSで `*.img` ファイルを展開したディレクトリでターミナルを開き、以下のようにスクリプトを実行します :
 
 ```bash
 chmod +x flash_all.sh && bash flash_all.sh
 ```
 
-### ����
-- ���̃X�N���v�g�́A�X���b�gA���ROM��Flash����Ɠ����ɃX���b�gB�̃p�[�e�B�V������j�󂵂āA�X���b�gA��Flash����Ă���p�[�e�B�V�����p�̃X�y�[�X���쐬���܂��B����̓p�[�e�B�V����������\�������邽�߂ŁA�X���b�g��؂�ւ���@�\���܂߂Ă��܂���B���̂��߁A�X�N���v�g�̓v���C�}���X���b�g(�X���b�gA)�̃p�[�e�B�V������Flash�����܂��B
+### 注意
+- このスクリプトは、スロットA上にROMをFlashすると同時にスロットBのパーティションを破壊して、スロットAにFlashされているパーティション用のスペースを作成します。これはパーティションが壊れる可能性があるためで、スロットを切り替える機能も含めていません。そのため、スクリプトはプライマリスロット(スロットA)のパーティションにFlashをします。
 
-## �ӎ�
+## 謝辞
 - [HELLBOY017](https://github.com/HELLBOY017)
-- �e�X�^�[
+- テスター
