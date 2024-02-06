@@ -18,7 +18,7 @@ fi
 fastboot=platform-tools/fastboot
 
 if [ ! -f $fastboot ] || [ ! -x $fastboot ]; then
-    echo "Fastboot cannot be executed, exiting"
+    echo "Fastboot cannot be executed. Aborting."
     exit 1
 fi
 
@@ -31,7 +31,7 @@ vbmeta_partitions="vbmeta_system vbmeta_vendor"
 function SetActiveSlot {
     $fastboot --set-active=a
     if [ $? -ne 0 ]; then
-        echo "Error occured while switching to slot A. Aborting"
+        echo "Error occured while switching to slot A. Aborting."
         exit 1
     fi
 }
@@ -45,7 +45,7 @@ function handle_fastboot_error {
 function ErasePartition {
     $fastboot erase $1
     if [ $? -ne 0 ]; then
-        read -p "Erasing $1 partition failed, Continue? If unsure say N, Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
+        read -p "Erasing $1 partition failed. Continue? If unsure say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -53,7 +53,7 @@ function ErasePartition {
 function FlashImage {
     $fastboot flash $1 $2
     if [ $? -ne 0 ]; then
-        read -p "Flashing$2 failed, Continue? If unsure say N, Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
+        read -p "Flashing $2 failed. Continue? If unsure say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -61,7 +61,7 @@ function FlashImage {
 function DeleteLogicalPartition {
     $fastboot delete-logical-partition $1
     if [ $? -ne 0 ]; then
-        read -p "Deleting $1 partition failed, Continue? If unsure say N, Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
+        read -p "Deleting $1 partition failed. Continue? If unsure say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -69,7 +69,7 @@ function DeleteLogicalPartition {
 function CreateLogicalPartition {
     $fastboot create-logical-partition $1 $2
     if [ $? -ne 0 ]; then
-        read -p "Creating $1 partition failed, Continue? If unsure say N, Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
+        read -p "Creating $1 partition failed. Continue? If unsure say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -87,7 +87,7 @@ function ResizeLogicalPartition {
 function WipeSuperPartition {
     $fastboot wipe-super super_empty.img
     if [ $? -ne 0 ]; then 
-        echo "Wiping super partition failed. Fallback to deleting and creating logical partitions"
+        echo "Wiping super partition failed. Fallback to deleting and creating logical partitions."
         ResizeLogicalPartition
     fi
 }
@@ -143,12 +143,12 @@ else
     done
 fi
 
-echo "##########################"             
-echo "# REBOOTING TO FASTBOOTD #"       
+echo "##########################"
+echo "# REBOOTING TO FASTBOOTD #"
 echo "##########################"
 $fastboot reboot fastboot
 if [ $? -ne 0 ]; then
-    echo "Error occured while rebooting to fastbootd. Aborting"
+    echo "Error occured while rebooting to fastbootd. Aborting."
     exit 1
 fi
 
