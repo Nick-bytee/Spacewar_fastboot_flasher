@@ -3,10 +3,10 @@ title Nothing Phone (1) Fastboot ROM Flasher (t.me/NothingPhone1)
 
 echo ###########################################################
 echo #                Pong Fastboot ROM Flasher                #
-echo #                   Developed/Tested By                   #
+echo #                Desenvolvido/Testado por                 #
 echo #  HELLBOY017, viralbanda, spike0en, PHATwalrus, arter97  #
 echo #          [Nothing Phone (2) Telegram Dev Team]          #
-echo #              [Adapted to Nothing Phone (1)]             #
+echo #            [Adaptado para Nothing Phone (1)]            #
 echo ###########################################################
 
 cd %~dp0
@@ -19,7 +19,7 @@ if not exist platform-tools-latest (
 
 set fastboot=.\platform-tools-latest\platform-tools\fastboot.exe
 if not exist %fastboot% (
-    echo Fastboot cannot be executed. Aborting.
+    echo Fastboot não pode ser executado. Abortando.
     pause
     exit
 )
@@ -29,35 +29,35 @@ set firmware_partitions=abl aop aop_config bluetooth cpucp devcfg dsp featenable
 set logical_partitions=system system_ext product vendor odm
 set vbmeta_partitions=vbmeta_system vbmeta_vendor
 
-echo #############################
-echo # CHECKING FASTBOOT DEVICES #
-echo #############################
+echo #####################################
+echo # VERIFICANDO DISPOSITIVOS FASTBOOT #
+echo #####################################
 %fastboot% devices
 
 %fastboot% getvar current-slot 2>&1 | find /c "current-slot: a" > tmpFile.txt
 set /p active_slot= < tmpFile.txt
 del /f /q tmpFile.txt
 if %active_slot% equ 0 (
-    echo #############################
-    echo # CHANGING ACTIVE SLOT TO A #
-    echo #############################
+    echo ###############################
+    echo # ALTERANDO SLOT ATIVO PARA A #
+    echo ###############################
     call :SetActiveSlot
 )
 
-echo ###################
-echo # FORMATTING DATA #
-echo ###################
-choice /m "Wipe Data?"
+echo ####################
+echo # FORMATANDO DADOS #
+echo ####################
+choice /m "Limpar dados?"
 if %errorlevel% equ 1 (
-    echo Please ignore "Did you mean to format this partition?" warnings.
+    echo Por favor, ignore o aviso "Você pretendia formatar esta partição?".
     call :ErasePartition userdata
     call :ErasePartition metadata
 )
 
 echo ############################
-echo # FLASHING BOOT PARTITIONS #
+echo # FLASHANDO PARTIÇÕES BOOT #
 echo ############################
-choice /m "Flash images on both slots? If unsure, say N."
+choice /m "Flashar imagens em ambos os slots? Se não tiver certeza, digite N."
 if %errorlevel% equ 1 (
     set slot=all
 ) else (
@@ -76,28 +76,28 @@ if %slot% equ all (
     )
 )
 
-echo ##########################
-echo # REBOOTING TO FASTBOOTD #
-echo ##########################
+echo ##############################
+echo # REINICIANDO PARA FASTBOOTD #
+echo ##############################
 %fastboot% reboot fastboot
 if %errorlevel% neq 0 (
-    echo Error occured while rebooting to fastbootd. Aborting.
+    echo Ocorreu um erro ao reiniciar para o fastbootd. Abortando.
     pause
     exit
 )
 
-echo #####################
-echo # FLASHING FIRMWARE #
-echo #####################
+echo ######################
+echo # FLASHANDO FIRMWARE #
+echo ######################
 for %%i in (%firmware_partitions%) do (
     call :FlashImage "--slot=%slot% %%i", %%i.img
 )
 
-echo ###################
-echo # FLASHING VBMETA #
-echo ###################
+echo ####################
+echo # FLASHANDO VBMETA #
+echo ####################
 set disable_avb=0
-choice /m "Disable android verified boot?, If unsure, say N. Bootloader won't be lockable if you select Y."
+choice /m "Desativar inicialização verificada do Android? Se não tiver certeza, digite N. O bootloader não poderá ser bloqueado se você digitar Y."
 if %errorlevel% equ 1 (
     set disable_avb=1
     call :FlashImage "--slot=%slot% vbmeta --disable-verity --disable-verification", vbmeta.img
@@ -106,11 +106,11 @@ if %errorlevel% equ 1 (
 )
 
 echo ###############################
-echo # FLASHING LOGICAL PARTITIONS #
+echo # FLASHANDO PARTIÇÕES LÓGICAS #
 echo ###############################
-echo Flash logical partition images?
-echo If you're about to install a custom ROM that distributes its own logical partitions, say N.
-choice /m "If unsure, say Y."
+echo Flashar imagens de partições lógicas?
+echo Se você estiver prestes a instalar uma ROM personalizada que distribua suas próprias partições lógicas, digite N.
+choice /m "Se não tiver certeza, digite Y."
 if %errorlevel% equ 1 (
     if not exist super.img (
         if exist super_empty.img (
@@ -126,9 +126,9 @@ if %errorlevel% equ 1 (
     )
 )
 
-echo ####################################
-echo # FLASHING OTHER VBMETA PARTITIONS #
-echo ####################################
+echo #####################################
+echo # FLASHANDO OUTRAS PARTIÇÕES VBMETA #
+echo #####################################
 for %%i in (%vbmeta_partitions%) do (
     if %disable_avb% equ 1 (
         call :FlashImage "%%i --disable-verity --disable-verification", %%i.img
@@ -137,19 +137,19 @@ for %%i in (%vbmeta_partitions%) do (
     )
 )
 
-echo #############
-echo # REBOOTING #
-echo #############
-choice /m "Reboot to system? If unsure, say Y."
+echo ###############
+echo # REINICIANDO #
+echo ###############
+choice /m "Reiniciar para o sistema? Se não tiver certeza, digite Y."
 if %errorlevel% equ 1 (
     %fastboot% reboot
 )
 
-echo ########
-echo # DONE #
-echo ########
-echo Stock firmware restored.
-echo You may now optionally re-lock the bootloader if you haven't disabled android verified boot.
+echo ##########
+echo # PRONTO #
+echo ##########
+echo Firmware stock restaurado.
+echo Agora você pode bloquear novamente o bootloader se não tiver desabilitado a inicialização verificada do Android.
 
 pause
 exit
@@ -173,14 +173,14 @@ exit /b
 :ErasePartition
 %fastboot% erase %~1
 if %errorlevel% neq 0 (
-    call :Choice "Erasing %~1 partition failed."
+    call :Choice "Falha ao apagar a partição %~1"
 )
 exit /b
 
 :SetActiveSlot
 %fastboot% --set-active=a
 if %errorlevel% neq 0 (
-    echo Error occured while switching to slot A. Aborting.
+    echo Ocorreu um erro ao mudar para o slot A. Abortando.
     pause
     exit
 )
@@ -189,7 +189,7 @@ exit /b
 :WipeSuperPartition
 %fastboot% wipe-super super_empty.img
 if %errorlevel% neq 0 (
-    echo Wiping super partition failed. Fallback to deleting and creating logical partitions.
+    echo A limpeza da partição super falhou. Reverter para excluir e criar partições lógicas.
     call :ResizeLogicalPartition
 )
 exit /b
@@ -207,26 +207,26 @@ exit /b
 :DeleteLogicalPartition
 %fastboot% delete-logical-partition %~1
 if %errorlevel% neq 0 (
-    call :Choice "Deleting %~1 partition failed"
+    call :Choice "Falha ao excluir a partição %~1"
 )
 exit /b
 
 :CreateLogicalPartition
 %fastboot% create-logical-partition %~1 %~2
 if %errorlevel% neq 0 (
-    call :Choice "Creating %~1 partition failed"
+    call :Choice "Falha na criação da partição %~1"
 )
 exit /b
 
 :FlashImage
 %fastboot% flash %~1 %~2
 if %errorlevel% neq 0 (
-    call :Choice "Flashing %~2 failed"
+    call :Choice "Falha ao flashar %~2"
 )
 exit /b
 
 :Choice
-choice /m "%~1 continue? If unsure, say N."
+choice /m "%~1 continuar? Se não tiver certeza, digite N."
 if %errorlevel% equ 2 (
     exit
 )

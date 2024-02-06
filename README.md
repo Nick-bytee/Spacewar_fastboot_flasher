@@ -6,9 +6,9 @@
 ### Usage
 - Before proceeding, ensure that the script is tailored to your operating system. Place the script in the directory where the required `*.img` files, downloaded from [here](https://github.com/spike0en/Spacewar_Archive), have been extracted. Finally reboot your device to the bootloader and then 
 
-    execute the script by double clicking the `flash_all.bat` file on windows 
+  execute the script by double clicking the `flash_all.bat` file on Windows
 
-    or by doing this on a linux operating system in terminal after opening the terminal in the directory where the `*.img` files from `payload.bin` have been extracted :
+  or by doing this on a linux operating system in terminal after opening the terminal in the directory where the `*.img` files from `payload.bin` have been extracted:
 
 ```bash
 chmod +x flash_all.sh && bash flash_all.sh

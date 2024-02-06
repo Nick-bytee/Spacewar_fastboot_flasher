@@ -3,10 +3,10 @@ title Nothing Phone (1) Fastboot ROM Flasher (t.me/NothingPhone1)
 
 echo ###########################################################
 echo #                Pong Fastboot ROM Flasher                #
-echo #                       ŠJ”­/ƒeƒXƒgŽÒ                          #
-echo #  HELLBOY017AviralbandaAspike0enAPHATwalrusAarter97      #
+echo #                     é–‹ç™º/ãƒ†ã‚¹ãƒˆè€…                        #
+echo #  HELLBOY017ã€viralbandaã€spike0enã€PHATwalrusã€arter97   #
 echo #          [Nothing Phone (2) Telegram Dev Team]          #
-echo #                [Nothing Phone (1)‚É‚àŽg—p‰Â”\]              #
+echo #              [Nothing Phone (1)ã«ã‚‚ä½¿ç”¨å¯èƒ½]             #
 echo ###########################################################
 
 cd %~dp0
@@ -19,7 +19,7 @@ if not exist platform-tools-latest (
 
 set fastboot=.\platform-tools-latest\platform-tools\fastboot.exe
 if not exist %fastboot% (
-    echo Fastboot‚ðŽÀs‚Å‚«‚Ü‚¹‚ñB’†Ž~‚µ‚Ü‚·B
+    echo Fastbootã‚’å®Ÿè¡Œã§ãã¾ã›ã‚“ã€‚ä¸­æ­¢ã—ã¾ã™ã€‚
     pause
     exit
 )
@@ -29,9 +29,9 @@ set firmware_partitions=abl aop aop_config bluetooth cpucp devcfg dsp featenable
 set logical_partitions=system system_ext product vendor odm
 set vbmeta_partitions=vbmeta_system vbmeta_vendor
 
-echo #############################
-echo #    FASTBOOTƒfƒoƒCƒX‚ÌŠm”F       #
-echo #############################
+echo #########################
+echo # FASTBOOTãƒ‡ãƒã‚¤ã‚¹ã®ç¢ºèª #
+echo #########################
 %fastboot% devices
 
 %fastboot% getvar current-slot 2>&1 | find /c "current-slot: a" > tmpFile.txt
@@ -39,25 +39,25 @@ set /p active_slot= < tmpFile.txt
 del /f /q tmpFile.txt
 if %active_slot% equ 0 (
     echo #############################
-    echo #      ƒAƒNƒeƒBƒuƒXƒƒbƒg‚ðA‚É•ÏX      #
+    echo # ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚¹ãƒ­ãƒƒãƒˆã‚’Aã«å¤‰æ›´ #
     echo #############################
     call :SetActiveSlot
 )
 
-echo ###################
-echo #   ƒf[ƒ^‚ÌƒtƒH[ƒ}ƒbƒg    #
-echo ###################
-choice /m "ƒf[ƒ^‚ðÁ‹Ž‚µ‚Ü‚·‚©H"
+echo ######################
+echo # ãƒ‡ãƒ¼ã‚¿ã®ãƒ•ã‚©ãƒ¼ãƒžãƒƒãƒˆ #
+echo ######################
+choice /m "ãƒ‡ãƒ¼ã‚¿ã‚’æ¶ˆåŽ»ã—ã¾ã™ã‹ï¼Ÿ"
 if %errorlevel% equ 1 (
-    echo u‚±‚Ìƒp[ƒeƒBƒVƒ‡ƒ“‚ðƒtƒH[ƒ}ƒbƒg‚µ‚Ü‚·‚©Hv‚ÌŒx‚Í–³Ž‹‚µ‚Ä‚­‚¾‚³‚¢B
+    echo ã€Œã“ã®ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã‚’ãƒ•ã‚©ãƒ¼ãƒžãƒƒãƒˆã—ã¾ã™ã‹ï¼Ÿã€ã®è­¦å‘Šã¯ç„¡è¦–ã—ã¦ãã ã•ã„ã€‚
     call :ErasePartition userdata
     call :ErasePartition metadata
 )
 
-echo ############################
-echo #     ƒu[ƒgƒp[ƒeƒBƒVƒ‡ƒ“‚Ìƒtƒ‰ƒbƒVƒ…     #
-echo ############################
-choice /m "—¼•û‚ÌƒXƒƒbƒg‚ÉƒCƒ[ƒW‚ðƒtƒ‰ƒbƒVƒ…‚µ‚Ü‚·‚©H ‚æ‚­•ª‚©‚ç‚È‚¢ê‡‚ÍN‚Æ“š‚¦‚Ä‚­‚¾‚³‚¢B"
+echo #################################
+echo # ãƒ–ãƒ¼ãƒˆãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ #
+echo #################################
+choice /m "ä¸¡æ–¹ã®ã‚¹ãƒ­ãƒƒãƒˆã«ã‚¤ãƒ¡ãƒ¼ã‚¸ã‚’ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ã—ã¾ã™ã‹ï¼Ÿ ã‚ˆãåˆ†ã‹ã‚‰ãªã„å ´åˆã¯Nã¨ç­”ãˆã¦ãã ã•ã„ã€‚"
 if %errorlevel% equ 1 (
     set slot=all
 ) else (
@@ -76,28 +76,28 @@ if %slot% equ all (
     )
 )
 
-echo ##########################             
-echo #    FASTBOOTD‚ÉÄ‹N“®      #       
-echo ##########################
+echo ####################
+echo # FASTBOOTDã«å†èµ·å‹• #
+echo ####################
 %fastboot% reboot fastboot
 if %errorlevel% neq 0 (
-    echo fastbootd‚ÉÄ‹N“®’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½B’†Ž~‚µ‚Ü‚·B
+    echo fastbootdã«å†èµ·å‹•ä¸­ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸã€‚ä¸­æ­¢ã—ã¾ã™ã€‚
     pause
     exit
 )
 
-echo #####################
-echo #   ƒtƒ@[ƒ€ƒEƒFƒA‚Ìƒtƒ‰ƒbƒVƒ…   #
-echo #####################
+echo ###########################
+echo # ãƒ•ã‚¡ãƒ¼ãƒ ã‚¦ã‚§ã‚¢ã®ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ #
+echo ###########################
 for %%i in (%firmware_partitions%) do (
     call :FlashImage "--slot=%slot% %%i", %%i.img
 )
 
-echo ###################
-echo #  VBMETA‚Ìƒtƒ‰ƒbƒVƒ…   #
-echo ###################
+echo #####################
+echo # VBMETAã®ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ #
+echo #####################
 set disable_avb=0
-choice /m "Android Verified Boot‚ð–³Œø‚É‚µ‚Ü‚·‚©H ‚æ‚­•ª‚©‚ç‚È‚¢ê‡‚ÍN‚Æ“š‚¦‚Ä‚­‚¾‚³‚¢BY‚ð‘I‘ð‚·‚é‚Æƒu[ƒgƒ[ƒ_[‚ªƒƒbƒN‚Å‚«‚È‚­‚È‚è‚Ü‚·B"
+choice /m "Android Verified Bootã‚’ç„¡åŠ¹ã«ã—ã¾ã™ã‹ï¼Ÿ ã‚ˆãåˆ†ã‹ã‚‰ãªã„å ´åˆã¯Nã¨ç­”ãˆã¦ãã ã•ã„ã€‚Yã‚’é¸æŠžã™ã‚‹ã¨ãƒ–ãƒ¼ãƒˆãƒ­ãƒ¼ãƒ€ãƒ¼ãŒãƒ­ãƒƒã‚¯ã§ããªããªã‚Šã¾ã™ã€‚"
 if %errorlevel% equ 1 (
     set disable_avb=1
     call :FlashImage "--slot=%slot% vbmeta --disable-verity --disable-verification", vbmeta.img
@@ -106,11 +106,11 @@ if %errorlevel% equ 1 (
 )
 
 echo ###############################
-echo #      ˜_—ƒp[ƒeƒBƒVƒ‡ƒ“‚Ìƒtƒ‰ƒbƒVƒ…       #
+echo # è«–ç†ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ #
 echo ###############################
-echo ˜_—ƒp[ƒeƒBƒVƒ‡ƒ“ƒCƒ[ƒW‚ðƒtƒ‰ƒbƒVƒ…‚µ‚Ü‚·‚©H
-echo ƒJƒXƒ^ƒ€ROM‚ðƒCƒ“ƒXƒg[ƒ‹‚·‚éê‡‚ÍN‚Æ“š‚¦‚Ä‚­‚¾‚³‚¢B
-choice /m "‚æ‚­•ª‚©‚ç‚È‚¢ê‡‚ÍY‚Æ“š‚¦‚Ä‚­‚¾‚³‚¢B"
+echo è«–ç†ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã‚¤ãƒ¡ãƒ¼ã‚¸ã‚’ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ã—ã¾ã™ã‹ï¼Ÿ
+echo ã‚«ã‚¹ã‚¿ãƒ ROMã‚’ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã™ã‚‹å ´åˆã¯Nã¨ç­”ãˆã¦ãã ã•ã„ã€‚
+choice /m "ã‚ˆãåˆ†ã‹ã‚‰ãªã„å ´åˆã¯Yã¨ç­”ãˆã¦ãã ã•ã„ã€‚"
 if %errorlevel% equ 1 (
     if not exist super.img (
         if exist super_empty.img (
@@ -126,9 +126,9 @@ if %errorlevel% equ 1 (
     )
 )
 
-echo ####################################
-echo #      ‘¼‚ÌVBMETAƒp[ƒeƒBƒVƒ‡ƒ“‚Ìƒtƒ‰ƒbƒVƒ…      #
-echo ####################################
+echo #####################################
+echo # ä»–ã®VBMETAãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ©ãƒƒã‚·ãƒ¥ #
+echo #####################################
 for %%i in (%vbmeta_partitions%) do (
     if %disable_avb% equ 1 (
         call :FlashImage "%%i --disable-verity --disable-verification", %%i.img
@@ -137,19 +137,19 @@ for %%i in (%vbmeta_partitions%) do (
     )
 )
 
-echo #############
-echo #   Ä‹N“®    #
-echo #############
-choice /m "ƒVƒXƒeƒ€‚ÉÄ‹N“®‚µ‚Ü‚·‚©H ‚æ‚­•ª‚©‚ç‚È‚¢ê‡‚ÍY‚Æ“š‚¦‚Ä‚­‚¾‚³‚¢B"
+echo ##########
+echo # å†èµ·å‹• #
+echo ##########
+choice /m "ã‚·ã‚¹ãƒ†ãƒ ã«å†èµ·å‹•ã—ã¾ã™ã‹ï¼Ÿ ã‚ˆãåˆ†ã‹ã‚‰ãªã„å ´åˆã¯Yã¨ç­”ãˆã¦ãã ã•ã„ã€‚"
 if %errorlevel% equ 1 (
     %fastboot% reboot
 )
 
 echo ########
-echo #  Š®—¹ #
+echo # å®Œäº† #
 echo ########
 echo Stock firmware restored.
-echo •K—v‚É‰ž‚¶‚Äƒu[ƒgƒ[ƒ_[‚ðÄƒƒbƒN‚Å‚«‚Ü‚·iAndroid Verified Boot‚ª–³Œø‚É‚È‚Á‚Ä‚¢‚È‚¢ê‡jB
+echo å¿…è¦ã«å¿œã˜ã¦ãƒ–ãƒ¼ãƒˆãƒ­ãƒ¼ãƒ€ãƒ¼ã‚’å†ãƒ­ãƒƒã‚¯ã§ãã¾ã™ï¼ˆAndroid Verified BootãŒç„¡åŠ¹ã«ãªã£ã¦ã„ãªã„å ´åˆï¼‰ã€‚
 
 pause
 exit
@@ -180,7 +180,7 @@ exit /b
 :SetActiveSlot
 %fastboot% --set-active=a
 if %errorlevel% neq 0 (
-    echo ƒXƒƒbƒgA‚ÉØ‚è‘Ö‚¦‚éÛ‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½B’†Ž~‚µ‚Ü‚·B
+    echo ã‚¹ãƒ­ãƒƒãƒˆAã«åˆ‡ã‚Šæ›¿ãˆã‚‹éš›ã«ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ã¾ã—ãŸã€‚ä¸­æ­¢ã—ã¾ã™ã€‚
     pause
     exit
 )
@@ -189,7 +189,7 @@ exit /b
 :WipeSuperPartition
 %fastboot% wipe-super super_empty.img
 if %errorlevel% neq 0 (
-    echo ƒX[ƒp[ƒp[ƒeƒBƒVƒ‡ƒ“‚ÌÁ‹Ž‚ÉŽ¸”s‚µ‚Ü‚µ‚½B˜_—ƒp[ƒeƒBƒVƒ‡ƒ“‚Ìíœ‚Æì¬‚ÉƒtƒH[ƒ‹ƒoƒbƒN‚µ‚Ü‚·B
+    echo ã‚¹ãƒ¼ãƒ‘ãƒ¼ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®æ¶ˆåŽ»ã«å¤±æ•—ã—ã¾ã—ãŸã€‚è«–ç†ãƒ‘ãƒ¼ãƒ†ã‚£ã‚·ãƒ§ãƒ³ã®å‰Šé™¤ã¨ä½œæˆã«ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ã—ã¾ã™ã€‚
     call :ResizeLogicalPartition
 )
 exit /b
@@ -226,7 +226,7 @@ if %errorlevel% neq 0 (
 exit /b
 
 :Choice
-choice /m "%~1 ‘±s‚µ‚Ü‚·‚©H ‚æ‚­•ª‚©‚ç‚È‚¢ê‡‚ÍN‚Æ“š‚¦‚Ä‚­‚¾‚³‚¢B"
+choice /m "%~1 ç¶šè¡Œã—ã¾ã™ã‹ï¼Ÿ ã‚ˆãåˆ†ã‹ã‚‰ãªã„å ´åˆã¯Nã¨ç­”ãˆã¦ãã ã•ã„ã€‚"
 if %errorlevel% equ 2 (
     exit
 )

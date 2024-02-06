@@ -1,11 +1,11 @@
 #!/bin/bash
 
 echo "###########################################################"
-echo "#                Spacewar Fastboot ROM Flasher            #"
-echo "#                        開発/テスト者                     #"
-echo "#  HELLBOY017、viralbanda、spike0en、PHATwalrus、arter97   #"
+echo "#                Pong Fastboot ROM Flasher                #"
+echo "#                Desenvolvido/Testado por                 #"
+echo "#  HELLBOY017, viralbanda, spike0en, PHATwalrus, arter97  #"
 echo "#          [Nothing Phone (2) Telegram Dev Team]          #"
-echo "#              [Nothing Phone (1)にも使用可能]             #"
+echo "#            [Adaptado para Nothing Phone (1)]            #"
 echo "###########################################################"
 
 ##----------------------------------------------------------##
@@ -18,11 +18,11 @@ fi
 fastboot=platform-tools/fastboot
 
 if [ ! -f $fastboot ] || [ ! -x $fastboot ]; then
-    echo "Fastboot を実行できません。終了します。"
+    echo "Fastboot não pode ser executado. Abortando."
     exit 1
 fi
 
-# パーティション変数
+# Variáveis ​​de partição
 boot_partitions="boot vendor_boot dtbo recovery"
 firmware_partitions="abl aop aop_config bluetooth cpucp devcfg dsp featenabler hyp imagefv keymaster modem multiimgoem multiimgqti qupfw qweslicstore shrm tz uefi uefisecapp xbl xbl_config xbl_ramdump"
 logical_partitions="system system_ext product vendor odm"
@@ -31,7 +31,7 @@ vbmeta_partitions="vbmeta_system vbmeta_vendor"
 function SetActiveSlot {
     $fastboot --set-active=a
     if [ $? -ne 0 ]; then
-        echo "スロット A への切り替え中にエラーが発生しました。中止します。"
+        echo "Ocorreu um erro ao mudar para o slot A. Abortando."
         exit 1
     fi
 }
@@ -45,7 +45,7 @@ function handle_fastboot_error {
 function ErasePartition {
     $fastboot erase $1
     if [ $? -ne 0 ]; then
-        read -p "$1 パーティションの消去に失敗しました。続行しますか？不確かな場合は N と入力してください。[Enter キーを押すと続行します] (Y/N)" FASTBOOT_ERROR
+        read -p "Falha ao apagar a partição $1. Deseja continuar? Se não tiver certeza, digite N. Pressionar a tecla Enter sem qualquer entrada continuará o script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -53,7 +53,7 @@ function ErasePartition {
 function FlashImage {
     $fastboot flash $1 $2
     if [ $? -ne 0 ]; then
-        read -p "$2 のフラッシュに失敗しました。続行しますか？不確かな場合は N と入力してください。[Enter キーを押すと続行します] (Y/N)" FASTBOOT_ERROR
+        read -p "Falha ao flashar $2. Deseja continuar? Se não tiver certeza, digite N. Pressionar a tecla Enter sem qualquer entrada continuará o script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -61,7 +61,7 @@ function FlashImage {
 function DeleteLogicalPartition {
     $fastboot delete-logical-partition $1
     if [ $? -ne 0 ]; then
-        read -p "$1 パーティションの削除に失敗しました。続行しますか？不確かな場合は N と入力してください。[Enter キーを押すと続行します] (Y/N)" FASTBOOT_ERROR
+        read -p "Falha ao excluir a partição $1. Deseja continuar? Se não tiver certeza, digite N. Pressionar a tecla Enter sem qualquer entrada continuará o script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -69,7 +69,7 @@ function DeleteLogicalPartition {
 function CreateLogicalPartition {
     $fastboot create-logical-partition $1 $2
     if [ $? -ne 0 ]; then
-        read -p "$1 パーティションの作成に失敗しました。続行しますか？不確かな場合は N と入力してください。[Enter キーを押すと続行します] (Y/N)" FASTBOOT_ERROR
+        read -p "Falha na criação da partição $1. Deseja continuar? Se não tiver certeza, digite N. Pressionar a tecla Enter sem qualquer entrada continuará o script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -87,41 +87,41 @@ function ResizeLogicalPartition {
 function WipeSuperPartition {
     $fastboot wipe-super super_empty.img
     if [ $? -ne 0 ]; then 
-        echo "スーパーパーティションの消去に失敗しました。論理パーティションの削除および作成にフォールバックします。"
+        echo "A limpeza da partição super falhou. Reverter para excluir e criar partições lógicas."
         ResizeLogicalPartition
     fi
 }
 ##----------------------------------------------------------##
 
-echo "##########################"
-echo "# FASTBOOT デバイスの確認 #"
-echo "##########################"
+echo "#####################################"
+echo "# VERIFICANDO DISPOSITIVOS FASTBOOT #"
+echo "#####################################"
 $fastboot devices
 
 ACTIVE_SLOT=$($fastboot getvar current-slot 2>&1 | awk 'NR==1{print $2}')
 if [ ! $ACTIVE_SLOT = "waiting" ] && [ ! $ACTIVE_SLOT = "a" ]; then
     echo "###############################"
-    echo "# アクティブスロットを A に変更 #"
+    echo "# ALTERANDO SLOT ATIVO PARA A #"
     echo "###############################"
     SetActiveSlot
 fi
 
-echo "######################"
-echo "# データのフォーマット #"
-echo "######################"
-read -p "データを消去しますか？ (Y/N) " DATA_RESP
+echo "####################"
+echo "# FORMATANDO DADOS #"
+echo "####################"
+read -p "Limpar dados? (Y/N) " DATA_RESP
 case $DATA_RESP in
     [yY] )
-        echo '「このパーティションをフォーマットするつもりですか？」の警告は無視してください。'
+        echo 'Por favor, ignore o aviso "Você pretendia formatar esta partição?".'
         ErasePartition userdata
         ErasePartition metadata
         ;;
 esac
 
-echo "#################################"
-echo "# ブートパーティションのフラッシュ #"
-echo "#################################"
-read -p "両方のスロットにイメージをフラッシュしますか？不確かな場合は N と入力してください。 (Y/N) " SLOT_RESP
+echo "############################"
+echo "# FLASHANDO PARTIÇÕES BOOT #"
+echo "############################"
+read -p "Flashar imagens em ambos os slots? Se não tiver certeza, digite N. (Y/N) " SLOT_RESP
 case $SLOT_RESP in
     [yY] )
         SLOT="--slot=all"
@@ -143,26 +143,26 @@ else
     done
 fi
 
-echo "#######################"
-echo "# FASTBOOTD への再起動 #"
-echo "#######################"
+echo "##############################"
+echo "# REINICIANDO PARA FASTBOOTD #"
+echo "##############################"
 $fastboot reboot fastboot
 if [ $? -ne 0 ]; then
-    echo "fastbootd への再起動中にエラーが発生しました。中止します。"
+    echo "Ocorreu um erro ao reiniciar para o fastbootd. Abortando."
     exit 1
 fi
 
-echo "###########################"
-echo "# ファームウェアのフラッシュ #"
-echo "###########################"
+echo "######################"
+echo "# FLASHANDO FIRMWARE #"
+echo "######################"
 for i in $firmware_partitions; do
     FlashImage "$SLOT $i" \ "$i.img"
 done
 
-echo "######################"
-echo "# VBMETA のフラッシュ #"
-echo "######################"
-read -p "Android の検証ブートを無効にしますか？不確かな場合は N と入力してください。Y を選択するとブートローダーはロックできません。 (Y/N) " VBMETA_RESP
+echo "####################"
+echo "# FLASHANDO VBMETA #"
+echo "####################"
+read -p "Desativar inicialização verificada do Android? Se não tiver certeza, digite N. O bootloader não poderá ser bloqueado se você digitar Y. (Y/N) " VBMETA_RESP
 case $VBMETA_RESP in
     [yY] )
         FlashImage "$SLOT vbmeta --disable-verity --disable-verification" \ "vbmeta.img"
@@ -173,11 +173,11 @@ case $VBMETA_RESP in
 esac
 
 echo "###############################"
-echo "# 論理パーティションのフラッシュ #"
+echo "# FLASHANDO PARTIÇÕES LÓGICAS #"
 echo "###############################"
-echo "論理パーティションイメージをフラッシュしますか？"
-echo "カスタム ROM をインストールする場合は N と入力してください。"
-read -p "不確かな場合は Y と入力してください。 (Y/N) " LOGICAL_RESP
+echo "Flashar imagens de partições lógicas?"
+echo "Se você estiver prestes a instalar uma ROM personalizada que distribua suas próprias partições lógicas, digite N."
+read -p "Se não tiver certeza, digite Y. (Y/N) " LOGICAL_RESP
 case $LOGICAL_RESP in
     [yY] )
         if [ ! -f super.img ]; then
@@ -195,9 +195,9 @@ case $LOGICAL_RESP in
         ;;
 esac
 
-echo "#######################################"
-echo "# 他の VBMETA パーティションのフラッシュ #"
-echo "#######################################"
+echo "#####################################"
+echo "# FLASHANDO OUTRAS PARTIÇÕES VBMETA #"
+echo "#####################################"
 for i in $vbmeta_partitions; do
     case $VBMETA_RESP in
         [yY] )
@@ -209,18 +209,18 @@ for i in $vbmeta_partitions; do
     esac
 done
 
-echo "#########"
-echo "# 再起動 #"
-echo "#########"
-read -p "システムに再起動しますか？不確かな場合は Y と入力してください。 (Y/N) " REBOOT_RESP
+echo "###############"
+echo "# REINICIANDO #"
+echo "###############"
+read -p "Reiniciar para o sistema? Se não tiver certeza, digite Y. (Y/N) " REBOOT_RESP
 case $REBOOT_RESP in
     [yY] )
         $fastboot reboot
         ;;
 esac
 
-echo "########"
-echo "# 完了 #"
-echo "########"
-echo "ストックファームウェアが復元されました。"
-echo "必要に応じてブートローダーを再ロックできます（Android の検証ブートが無効の場合はオプションです）"
+echo "##########"
+echo "# PRONTO #"
+echo "##########"
+echo "Firmware stock restaurado."
+echo "Agora você pode bloquear novamente o bootloader se não tiver desabilitado a inicialização verificada do Android."
