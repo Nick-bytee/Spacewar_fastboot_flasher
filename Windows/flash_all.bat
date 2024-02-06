@@ -81,7 +81,7 @@ echo # REBOOTING TO FASTBOOTD #
 echo ##########################
 %fastboot% reboot fastboot
 if %errorlevel% neq 0 (
-    echo Error occured while rebooting to fastbootd. Aborting
+    echo Error occured while rebooting to fastbootd. Aborting.
     pause
     exit
 )
@@ -226,7 +226,7 @@ if %errorlevel% neq 0 (
 exit /b
 
 :Choice
-choice /m "%~1 continue? If unsure say N"
+choice /m "%~1 continue? If unsure, say N."
 if %errorlevel% equ 2 (
     exit
 )
