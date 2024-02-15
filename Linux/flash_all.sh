@@ -45,7 +45,7 @@ function handle_fastboot_error {
 function ErasePartition {
     $fastboot erase $1
     if [ $? -ne 0 ]; then
-        read -p "Erasing $1 partition failed. Continue? If unsure say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
+        read -p "Erasing $1 partition failed. Continue? If unsure, say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -53,7 +53,7 @@ function ErasePartition {
 function FlashImage {
     $fastboot flash $1 $2
     if [ $? -ne 0 ]; then
-        read -p "Flashing $2 failed. Continue? If unsure say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
+        read -p "Flashing $2 failed. Continue? If unsure, say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -61,7 +61,7 @@ function FlashImage {
 function DeleteLogicalPartition {
     $fastboot delete-logical-partition $1
     if [ $? -ne 0 ]; then
-        read -p "Deleting $1 partition failed. Continue? If unsure say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
+        read -p "Deleting $1 partition failed. Continue? If unsure, say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -69,7 +69,7 @@ function DeleteLogicalPartition {
 function CreateLogicalPartition {
     $fastboot create-logical-partition $1 $2
     if [ $? -ne 0 ]; then
-        read -p "Creating $1 partition failed. Continue? If unsure say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
+        read -p "Creating $1 partition failed. Continue? If unsure, say N. Pressing Enter key without any input will continue the script. (Y/N)" FASTBOOT_ERROR
         handle_fastboot_error
     fi
 }
@@ -162,7 +162,7 @@ done
 echo "###################"
 echo "# FLASHING VBMETA #"
 echo "###################"
-read -p "Disable android verified boot?, If unsure, say N. Bootloader won't be lockable if you select Y. (Y/N) " VBMETA_RESP
+read -p "Disable android verified boot?. If unsure, say N. Bootloader won't be lockable if you select Y. (Y/N) " VBMETA_RESP
 case $VBMETA_RESP in
     [yY] )
         FlashImage "$SLOT vbmeta --disable-verity --disable-verification" \ "vbmeta.img"
